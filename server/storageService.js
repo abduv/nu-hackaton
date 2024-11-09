@@ -3,7 +3,7 @@ const path = require('path');
 
 // Путь к JSON-файлу с ключом учетной записи службы
 const storage = new Storage({
-    keyFilename: path.join(__dirname, 'config/nu-hackaton-b033a0e95304.json.json')
+    keyFilename: path.join(__dirname, 'config/nu-hackaton-b033a0e95304.json') // Убедитесь, что имя файла правильное
 });
 
 // Имя бакета, в который будет загружен файл
@@ -15,10 +15,16 @@ async function uploadFileToCloud(filePath) {
         await storage.bucket(bucketName).upload(filePath, {
             destination: fileName, // Имя файла в бакете
         });
-        const file = storage.bucket(bucketName).file(fileName);
+        console.log(`Файл ${fileName} успешно загружен в бакет ${bucketName}`);
         return `https://storage.googleapis.com/${bucketName}/${fileName}`;
     } catch (error) {
-        console.error('Ошибка при загрузке файла в Google Cloud Storage:', error);
+        if (error.code === 404) {
+            console.error('Ошибка: указанный бакет не найден.');
+        } else if (error.code === 403) {
+            console.error('Ошибка: недостаточно прав для загрузки в бакет.');
+        } else {
+            console.error('Ошибка при загрузке файла в Google Cloud Storage:', error.message);
+        }
         throw error;
     }
 }
