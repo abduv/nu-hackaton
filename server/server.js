@@ -1,16 +1,18 @@
 const express = require('express');
 const multer = require('multer');
 const cors = require('cors');
+const path = require('path');
 const { uploadFileToCloud } = require('./storageService');
 const { extractTextFromFile } = require('./extractTextFromFile');
 const { generateQuestions } = require('./generateQuestions');
+// const { generateQuestions } = require('./geminiApi');
+
 
 const app = express();
-app.use(cors()); // Разрешаем CORS для всех маршрутов
+app.use(cors());
 
 const upload = multer({ dest: 'uploads/' });
 
-// Маршрут для загрузки файла и генерации вопросов
 app.post('/upload-and-generate-questions', upload.single('file'), async (req, res) => {
     try {
         console.log("Запрос получен, файл:", req.file);
@@ -20,29 +22,33 @@ app.post('/upload-and-generate-questions', upload.single('file'), async (req, re
         }
 
         const filePath = req.file.path;
-        const fileExtension = path.extname(filePath).toLowerCase();
+        const fileMimeType = req.file.mimetype;
+        
 
-        // Проверка допустимых расширений файлов
-        if (fileExtension !== '.pdf' && fileExtension !== '.docx') {
+        if (fileMimeType !== 'application/pdf' && fileMimeType !== 'application/vnd.openxmlformats-officedocument.wordprocessingml.document') {
             return res.status(400).json({ error: 'Неподдерживаемый формат файла. Пожалуйста, загрузите PDF или DOCX.' });
         }
 
-        // Загрузка файла в Google Cloud Storage (необязательно)
         const fileUrl = await uploadFileToCloud(filePath);
-        console.log("Файл загружен в облако, URL:", fileUrl);
+        const text = await extractTextFromFile(filePath, fileMimeType);
 
-        // Извлечение текста из файла
-        const text = await extractTextFromFile(filePath);
-        console.log("Извлеченный текст:", text);
-
-        // Генерация вопросов с помощью ИИ
+        // Генерация вопросов
         const questions = await generateQuestions(text);
         console.log("Сгенерированные вопросы:", questions);
 
-        res.json({ message: 'Вопросы успешно сгенерированы', fileUrl, questions });
+        // Отправка данных на фронтенд
+        console.log("Сгенерированные вопросы для отправки на фронтенд:", questions.candidates.map(candidate => candidate.content.text));
+        console.log("Весь объект вопросов от Gemini API:", JSON.stringify(questions, null, 2));
+
+        res.json({
+            message: 'Вопросы успешно сгенерированы',
+            fileUrl,
+            questions: questions.candidates.map(candidate => candidate.content.parts[0]?.text) // измените путь на основе структуры
+        });
+        
     } catch (error) {
-        console.error('Ошибка при обработке запроса:', error);
-        res.status(500).json({ error: 'Ошибка при обработке запроса' });
+        console.error('Ошибка при обработке запроса:', error.message);
+        res.status(500).json({ error: 'Ошибка при обработке запроса', details: error.message });
     }
 });
 

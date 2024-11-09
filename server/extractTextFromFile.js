@@ -1,18 +1,27 @@
+const fs = require('fs').promises;
+const pdfParse = require('pdf-parse');
+const mammoth = require('mammoth');
 
-async function extractTextFromFile(filePath) {
+async function extractTextFromFile(filePath, mimeType) {
     try {
         const dataBuffer = await fs.readFile(filePath);
-        if (filePath.endsWith('.pdf')) {
+        // console.log("MIME-тип файла:", mimeType);
+
+        if (mimeType === 'application/pdf') {
             const data = await pdfParse(dataBuffer);
+            // console.log("Текст извлечён из PDF");
             return data.text;
-        } else if (filePath.endsWith('.docx')) {
+        } else if (mimeType === 'application/vnd.openxmlformats-officedocument.wordprocessingml.document') {
             const { value: text } = await mammoth.extractRawText({ buffer: dataBuffer });
+            console.log("Текст извлечён из DOCX");
             return text;
         } else {
-            throw new Error(`Неподдерживаемый формат файла: ${path.extname(filePath)}. Поддерживаются только PDF и DOCX.`);
+            throw new Error(`Неподдерживаемый формат файла с MIME-типом: ${mimeType}`);
         }
     } catch (error) {
-        console.error('Ошибка при извлечении текста из файла:', error);
+        // console.error('Ошибка при извлечении текста из файла:', error);
         throw error;
     }
 }
+
+module.exports = { extractTextFromFile };
