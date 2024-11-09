@@ -1,17 +1,30 @@
 const express = require('express');
 const multer = require('multer');
 const { uploadFileToCloud } = require('./storageService');
+const { extractTextFromFile } = require('./extractTextFromFile');
+const { generateQuestions } = require('./generateQuestions');
 
 const app = express();
 const upload = multer({ dest: 'uploads/' });
 
-app.post('/test-upload', upload.single('file'), async (req, res) => {
+app.post('/upload-and-generate-questions', upload.single('file'), async (req, res) => {
     try {
         const filePath = req.file.path;
+
+        // Загрузка файла в Google Cloud Storage (по желанию)
         const fileUrl = await uploadFileToCloud(filePath);
-        res.json({ message: 'Файл успешно загружен в Google Cloud Storage', fileUrl });
+
+        // Извлечение текста из файла
+        const text = await extractTextFromFile(filePath);
+
+        // Генерация вопросов с помощью Gemini API
+        const questions = await generateQuestions(text);
+
+        // Возвращаем клиенту URL файла и вопросы
+        res.json({ message: 'Вопросы успешно сгенерированы', fileUrl, questions });
     } catch (error) {
-        res.status(500).json({ error: 'Ошибка при загрузке файла' });
+        console.error('Ошибка при обработке запроса:', error);
+        res.status(500).json({ error: 'Ошибка при обработке запроса' });
     }
 });
 
