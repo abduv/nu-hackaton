@@ -1,0 +1,13 @@
+{
+  "type": "service_account",
+  "project_id": "nu-hackaton",
+  "private_key_id": "b033a0e953047ca9ce09b7199e25bdae9edb8063",
+  "private_key": "-----BEGIN PRIVATE KEY-----\nMIIEvgIBADANBgkqhkiG9w0BAQEFAASCBKgwggSkAgEAAoIBAQDTQXr1iRLXFNfR\n4yItNk2w40SqYVXog97qRLBWvvTmapjMYsvWjHDfKNyqQM/r8rnvtQJT416AaksC\nwptXdsUHr+A+yQIAnChI2abvlSQkhPBjTqSjbDvjyIgOPJmFiyksCv99iaOvBtPy\nB/5lDg98CFBPD0ujegZU3w5kn36dgkZOqFLZYWUKhPjjCAHUT3lhaXfMi6bObLXJ\njJ3E9Y2VNsNAkxNrTdSaOi63FSNu4c+2wG8dVx4lPpo7S6tXZXAEVhpspA044J/s\nIDGrRRNrwAFKe8K80dHOH/ziEXbkINDOB1bp0fUVSNh+gRY1gvhj49DrLmQS7scD\nJa4CVHbTAgMBAAECggEAAK016YGblVb3czBXV8ftcZKwxOjt5c8L6jn3fjehwJEr\n1YLySy9RxAbOxuueBUMjdFCWMtJiGmaWWeppclsquchG7BYoH8j52g3hNBg8ShlA\n5qVSvER1YD8WrHdmOHn5hkh8u/6yW8+mSYd1oAY7Z3bK89qrlj9Z5z18DGqnjnXI\nW/6F7nvWzLsZLE7FnWRraIy/VevLrycuElsbybK3KmLG0Pl6+VLF83gGm+OjySEj\nznxppeyYttkIqgSI4v1qfj7CRcNISL8+Yf89tJnV6s96CZCQJ5Isne5XJugYQHN1\nZNMzLg6oR1vknaaNWzIttBrlgocfhnA//Zd/DxTrHQKBgQD+Pgm0+FHozCeHvDY3\nkxTHA+y0IKQ8+Vwvk41hjciKRJedZLNMEy8r/NGyty2I86fkSLT6JVldXQqegpms\nrWgEwZS7jAAZoDft8B6ii11StAtoKvhKQqTqYMXoBC328yE45dYtImI04+36jf0d\n/jxhivov+Hlby/UK72aUUo153QKBgQDUt102kXReZj/M3D7MIL7IHKgzbYr1itU4\nWtqXzS+eU/wz8bWkdVVUSYai4y8as6n1pKkc/Q8ll1v4+bPw2il33s3pR2NgOrav\nQGXucso3NZQZAvlDYb9laIZ/KTRpccdQVbjm36llMEqtOR9XiDd3ZqIj6A5d0evq\n3CW7MTUgbwKBgQCVXBLNyxgroEwU1MAxM+n/5NFZHNf/riq3FIL5bZcDi7paT795\nkMekmtkCmdRZYXMfjIstbWWrkK5dYrIvHIxARw0+hMfGRja1RNxqd18y5+zPnHbT\nAYXq30FExbfPHRRGXdfOGiYBlmnHSUULKsGEOGY0ak+5Wv+xFeV4e2r7zQKBgD3i\nInIPmuUjpgf5QyOrmxUokR51DeolO6ard9CV1vaexE5wUUHJCMv+n/afVULVZeqa\nvsA6Nr/e6tjh/CFjtpCy9wCYziZermsJtx3Js16gbbdhEBc0RrQ/1nEEEcVjXnLW\nnXY9N1DC3dbLOX0Dme9Yom8Dwbo1qganiSqOREBtAoGBAOeCkXeXmZdq3Ey99wPS\nf5JYG83bme/h+72iH7TEXAnVxMJy4jX8D67DSgH7RltiMnxlNBKuB/WCJZEFgPvm\n2BlCjUVEs6WkTTNqithXyYb0mHmLpJdR8g7WC0PkIn1Ph8H34LJDY/vpMlmEpGrS\ncHO58xiFSUbkkqt8AiE+NGIS\n-----END PRIVATE KEY-----\n",
+  "client_email": "nu-huckaton@nu-hackaton.iam.gserviceaccount.com",
+  "client_id": "114489794311237747926",
+  "auth_uri": "https://accounts.google.com/o/oauth2/auth",
+  "token_uri": "https://oauth2.googleapis.com/token",
+  "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
+  "client_x509_cert_url": "https://www.googleapis.com/robot/v1/metadata/x509/nu-huckaton%40nu-hackaton.iam.gserviceaccount.com",
+  "universe_domain": "googleapis.com"
+}
