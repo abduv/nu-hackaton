@@ -64,11 +64,7 @@ function App() {
       setMessage(message)
 
       const res = JSON.parse(
-        questions[0]
-          .trim()
-          .slice(3, questions.length - 3)
-          .replace(/\n/g, '')
-          .replace('json', '')
+        questions[0].slice(3, questions[0].length - 3).replace('json', '')
       )
 
       setQuestions(res)
@@ -168,12 +164,14 @@ function App() {
         {questions.length > 0 && (
           <div>
             Вопросы:
-            {questions.map((question, index) => (
-              <div>
-                <p>{question.question}</p>
+            {questions.map((item, index) => (
+              <div key={index} className="question">
+                <h3>
+                  {index + 1}. {item.question}
+                </h3>
                 <ul>
-                  {question.answers.map((answer, index) => (
-                    <li>{answer}</li>
+                  {item.answers.map((answer, i) => (
+                    <li key={i}>&emsp;{i + 1}. {answer}</li>
                   ))}
                 </ul>
               </div>
