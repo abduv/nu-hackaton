@@ -1,56 +1,50 @@
-const express = require('express');
-const multer = require('multer');
-const cors = require('cors');
-const path = require('path');
-const { uploadFileToCloud } = require('./storageService');
-const { extractTextFromFile } = require('./extractTextFromFile');
-const { generateQuestions } = require('./generateQuestions');
-// const { generateQuestions } = require('./geminiApi');
+const express = require('express')
+const multer = require('multer')
+const cors = require('cors')
 
+const {extractTextFromFile} = require('./extractTextFromFile')
+const {generateQuestions} = require('./generateQuestions')
 
-const app = express();
-app.use(cors());
+const app = express()
+app.use(cors())
 
-const upload = multer({ dest: 'uploads/' });
+const upload = multer({dest: 'uploads/'})
 
-app.post('/upload-and-generate-questions', upload.single('file'), async (req, res) => {
+app.post(
+  '/upload-and-generate-questions',
+  upload.array('files'),
+  async (req, res) => {
     try {
-        console.log("Запрос получен, файл:", req.file);
+      if (!req.files.length) {
+        return res.status(400).json({error: 'Файл не загружен'})
+      }
 
-        if (!req.file) {
-            return res.status(400).json({ error: 'Файл не загружен' });
-        }
+      const texts = []
 
-        const filePath = req.file.path;
-        const fileMimeType = req.file.mimetype;
-        
+      for (let file of req.files) {
+        const filePath = file.path
+        const fileMimeType = file.mimetype
 
-        if (fileMimeType !== 'application/pdf' && fileMimeType !== 'application/vnd.openxmlformats-officedocument.wordprocessingml.document') {
-            return res.status(400).json({ error: 'Неподдерживаемый формат файла. Пожалуйста, загрузите PDF или DOCX.' });
-        }
+        const text = await extractTextFromFile(filePath, fileMimeType)
 
-        const fileUrl = await uploadFileToCloud(filePath);
-        const text = await extractTextFromFile(filePath, fileMimeType);
+        texts.push(text)
+      }
 
-        // Генерация вопросов
-        const questions = await generateQuestions(text);
-        console.log("Сгенерированные вопросы:", questions);
+      const questions = await generateQuestions(texts.join('\nСледующий материал:\n'))
 
-        // Отправка данных на фронтенд
-        console.log("Сгенерированные вопросы для отправки на фронтенд:", questions.candidates.map(candidate => candidate.content.text));
-        console.log("Весь объект вопросов от Gemini API:", JSON.stringify(questions, null, 2));
-
-        res.json({
-            message: 'Вопросы успешно сгенерированы',
-            fileUrl,
-            questions: questions.candidates.map(candidate => candidate.content.parts[0]?.text) // измените путь на основе структуры
-        });
-        
+      res.json({
+        message: 'Вопросы успешно сгенерированы',
+        questions: questions.candidates.map(
+          candidate => candidate.content.parts[0]?.text
+        ),
+      })
     } catch (error) {
-        console.error('Ошибка при обработке запроса:', error.message);
-        res.status(500).json({ error: 'Ошибка при обработке запроса', details: error.message });
+      console.error('Ошибка при обработке запроса:', error.message)
+      res
+        .status(500)
+        .json({error: 'Ошибка при обработке запроса', details: error.message})
     }
-});
+  }
+)
 
-
-app.listen(5000, () => console.log('Сервер запущен на порту 5000'));
+app.listen(5000, () => console.log('Server has been started on 5000 PORT'))
