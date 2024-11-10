@@ -1,45 +1,63 @@
 import React, { useState } from 'react';
+import axios from 'axios';
+import { useDropzone } from 'react-dropzone';
 import './index.css';
 
 function App() {
-  const [file, setFile] = useState(null);
+  const [files, setFiles] = useState([]);
   const [query, setQuery] = useState("");
   const [textMaterial, setTextMaterial] = useState(""); 
   const [uploadType, setUploadType] = useState("document");
   const [error, setError] = useState(null);
+  const [message, setMessage] = useState('');
+  const [questions, setQuestions] = useState([]);
 
-  const handleFileChange = (event) => {
-    const selectedFile = event.target.files[0];
-    if (selectedFile) {
-      const validTypes = uploadType === "document"
-        ? ["application/pdf", "application/msword"]
-        : ["image/png", "image/jpeg", "image/gif"];
-      
-      if (!validTypes.includes(selectedFile.type)) {
-        setError("Неверный тип файла. Пожалуйста, загрузите подходящий файл.");
-        setFile(null); 
-      } else {
-        setError(null); 
-        setFile(selectedFile);
-      }
+  // Обработчик для Drag-and-Drop
+  const onDrop = (acceptedFiles) => {
+    const validTypes = uploadType === "document"
+      ? ["application/pdf", "application/msword", "text/plain"]
+      : ["image/png", "image/jpeg", "image/gif"];
+
+    const filteredFiles = acceptedFiles.filter((file) =>
+      validTypes.includes(file.type)
+    );
+
+    if (filteredFiles.length !== acceptedFiles.length) {
+      setError("Неверный тип файла. Пожалуйста, загрузите подходящий файл.");
+    } else {
+      setError(null);
+      setFiles(filteredFiles);
     }
   };
 
-  const handleDrop = (event) => {
-    event.preventDefault();
-    const selectedFile = event.dataTransfer.files[0];
-    handleFileChange({ target: { files: [selectedFile] } });
-  };
+  const { getRootProps, getInputProps, isDragActive } = useDropzone({
+    onDrop,
+    multiple: false,
+    accept: uploadType === "document"
+      ? ["application/pdf", "application/msword", "text/plain"]
+      : ["image/png", "image/jpeg", "image/gif"]
+  });
 
-  const handleSubmit = () => {
-    if (!file && uploadType !== "text") {
-      setError("Пожалуйста, выберите файл.");
-    } else if (!query) {
-      setError("Пожалуйста, введите запрос.");
-    } else if (!textMaterial && uploadType === "text") {
-      setError("Пожалуйста, введите текстовый материал.");
-    } else {
-      alert(`Тип загрузки: ${uploadType}\nФайл: ${file ? file.name : 'Не выбран'}\nЗапрос: ${query}\nТекстовый материал: ${textMaterial}`);
+  const handleSubmit = async () => {
+    if (!files.length) {
+      alert("Пожалуйста, выберите файл");
+      return;
+    }
+
+    const formData = new FormData();
+    formData.append('file', files[0]);
+
+    try {
+      const response = await axios.post('http://localhost:5000/upload-and-generate-questions', formData, {
+        headers: { 'Content-Type': 'multipart/form-data' }
+      });
+
+      const { message, questions } = response.data;
+      setMessage(message);
+      setQuestions(questions);
+    } catch (error) {
+      console.error("Ошибка при загрузке файла и генерации вопросов:", error);
+      setMessage("Ошибка при загрузке файла или генерации вопросов");
     }
   };
 
@@ -58,14 +76,13 @@ function App() {
         <div className="w-full max-w-md bg-white p-8 rounded-lg shadow-lg">
           <h2 className="text-center text-xl font-semibold text-indigo-600 mb-6">Загрузите свой материал</h2>
 
-          {/* Переключатель типов загрузки */}
           <div className="flex justify-center mb-6 space-x-3">
-            {["document", "text", "image"].map((type) => (
+            {["document", "text"].map((type) => (
               <button
                 key={type}
                 onClick={() => {
                   setUploadType(type);
-                  setFile(null);
+                  setFiles([]);
                   setError(null);
                 }}
                 className={`px-4 py-2 rounded-md font-medium transition duration-200 
@@ -76,7 +93,6 @@ function App() {
             ))}
           </div>
 
-          {/* Поле для запроса */}
           <textarea
             placeholder="Введите тему и тип вопросов для теста..."
             value={query}
@@ -84,7 +100,6 @@ function App() {
             className="w-full h-12 px-3 py-2 border border-indigo-300 rounded-md text-sm resize-none text-gray-700 mb-4 focus:outline-none focus:ring-2 focus:ring-indigo-500 bg-indigo-50 shadow-sm"
           ></textarea>
 
-          {/* Поле для текстового материала */}
           {uploadType === "text" && (
             <textarea
               placeholder="Введите текстовый материал..."
@@ -94,69 +109,56 @@ function App() {
             ></textarea>
           )}
 
-          {/* Поле для загрузки файла для документов */}
           {uploadType === "document" && (
-            <div className="flex items-center justify-center w-full mb-4">
-              <label htmlFor="doc-file" className="flex flex-col items-center justify-center w-full h-48 border-2 border-gray-300 border-dashed rounded-lg cursor-pointer bg-gray-50 hover:bg-gray-100">
-                <div className="flex flex-col items-center justify-center pt-5 pb-6">
-                  <svg className="w-8 h-8 mb-4 text-gray-500" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 20 16">
-                    <path stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 13h3a3 3 0 0 0 0-6h-.025A5.56 5.56 0 0 0 16 6.5 5.5 5.5 0 0 0 5.207 5.021C5.137 5.017 5.071 5 5 5a4 4 0 0 0 0 8h2.167M10 15V6m0 0L8 8m2-2 2 2"/>
-                  </svg>
-                  <p className="mb-2 text-sm text-gray-500"><span className="font-semibold">Нажмите, чтобы загрузить</span> или перетащите файл</p>
-                  <p className="text-xs text-gray-500">PDF, DOC, TXT</p>
-                </div>
-                <input 
-                  id="doc-file" 
-                  type="file" 
-                  className="hidden" 
-                  accept=".pdf,.doc"
-                  onChange={handleFileChange}
-                />
-              </label>
-            </div>
-          )}
-
-          {/* Поле для загрузки изображений */}
-          {uploadType === "image" && (
-            <div 
-              className="flex items-center justify-center w-full mb-4"
-              onDrop={handleDrop}
-              onDragOver={(event) => event.preventDefault()}
+            <div
+              {...getRootProps()}
+              className={`flex items-center justify-center w-full h-48 border-2 border-dashed rounded-lg cursor-pointer ${isDragActive ? 'bg-indigo-100' : 'bg-gray-50 hover:bg-gray-100'}`}
             >
-              <label htmlFor="image-file" className="flex flex-col items-center justify-center w-full h-48 border-2 border-gray-300 border-dashed rounded-lg cursor-pointer bg-gray-50 hover:bg-gray-100">
-                <div className="flex flex-col items-center justify-center pt-5 pb-6">
-                  <svg className="w-8 h-8 mb-4 text-gray-500" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 20 16">
-                    <path stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 13h3a3 3 0 0 0 0-6h-.025A5.56 5.56 0 0 0 16 6.5 5.5 5.5 0 0 0 5.207 5.021C5.137 5.017 5.071 5 5 5a4 4 0 0 0 0 8h2.167M10 15V6m0 0L8 8m2-2 2 2"/>
-                  </svg>
-                  <p className="mb-2 text-sm text-gray-500"><span className="font-semibold">Нажмите, чтобы загрузить</span> или перетащите файл</p>
-                  <p className="text-xs text-gray-500">PNG, JPG или GIF</p>
-                </div>
-                <input 
-                  id="image-file" 
-                  type="file" 
-                  className="hidden" 
-                  accept=".png,.jpg,.jpeg,.gif"
-                  onChange={handleFileChange}
-                />
-              </label>
+              <input {...getInputProps()} />
+              <div className="text-center">
+                <p className="text-sm text-gray-500">{isDragActive ? "Отпустите файл здесь ..." : "Нажмите или перетащите файл сюда"}</p>
+                <p className="text-xs text-gray-500 mt-1">PDF, DOC, TXT</p>
+              </div>
             </div>
           )}
 
-          {/* Ошибка */}
-          {error && <p className="text-red-500 text-sm mb-4">{error}</p>}
+          {error && <p className="text-red-500 text-sm mt-2">{error}</p>}
 
-          {/* Кнопка для отправки */}
+          {files.length > 0 && (
+            <div className="mt-4">
+              <h4 className="text-md font-semibold">Выбранный файл:</h4>
+              <ul className="list-disc list-inside text-gray-700">
+                {files.map((file, index) => (
+                  <li key={index}>{file.name}</li>
+                ))}
+              </ul>
+            </div>
+          )}
+
           <button
             onClick={handleSubmit}
-            className="w-full py-3 bg-indigo-600 text-white rounded-md font-medium hover:bg-indigo-700 transition duration-200"
+            className="w-full py-3 mt-6 bg-indigo-600 text-white rounded-md font-medium hover:bg-indigo-700 transition duration-200"
           >
             Сгенерировать тест
           </button>
+
+          {message && <p className="text-green-500 text-sm mt-4">{message}</p>}
+
+          {questions.length > 0 && (
+            <div className="mt-6">
+              <h3 className="text-lg font-semibold">Сгенерированные вопросы:</h3>
+              <ul className="list-disc list-inside">
+                {questions.map((question, index) => (
+                  <li key={index} className="text-gray-700 mt-1">{question}</li>
+                ))}
+              </ul>
+            </div>
+          )}
         </div>
       </main>
 
       <footer className="bg-gray-800 text-white py-4 text-center text-sm">
-        <p> Абду Пидр</p>
+        <p>Автор: Ваше Имя</p>
       </footer>
     </div>
   );
